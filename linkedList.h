@@ -23,4 +23,5 @@ void safe_free(void *);
 void initialize_list(linked_list_t *);
 void add_node(linked_list_t *, void *);
 void remove_node(linked_list_t *, void *);
+void free_list(linked_list_t *);
 void *get_nth_element(linked_list_t *, int );
