@@ -58,6 +58,15 @@ void handle_en_error(int en, char *msg)
     }
 }
 
+void safe_free(void *ptr)
+{
+    if (ptr != NULL)
+    {
+        free(ptr);
+        ptr = NULL;
+    }
+}
+
 /**
  * Initializes the linked list.
  * @param list pointer to the linked list to initialize.
@@ -79,14 +88,14 @@ void initialize_list(linked_list_t *list)
  */
 void add_node(linked_list_t *list, void *data)
 {
-    node_t *new_node = (node_t *)malloc(sizeof(node_t));
-    handle_null_error(&new_node, "malloc");
+    node_t *new_node = (node_t *)calloc(1, sizeof(node_t));
+    handle_null_error(&new_node, "calloc");
     new_node->data = data;
     en = pthread_mutex_lock(&list->lock);
     handle_en_error(en, "pthread_mutex_lock in add_node");
     new_node->next = list->head;
     list->head = new_node;
-    list->size++;
+    list->size = list->size + 1;
     en = pthread_mutex_unlock(&list->lock);
     handle_en_error(en, "pthread_mutex_unlock in add_node");
 }
@@ -117,7 +126,7 @@ void remove_node(linked_list_t *list, void *data)
                 previous->next = current->next;
             }
 
-            free(current);
+            safe_free(current);
             list->size = list->size - 1;
             break;
         }
@@ -174,8 +183,8 @@ void free_list(linked_list_t *list)
     while (current != NULL)
     {
         node_t *next = current->next;
-        free(current->data);
-        free(current);
+        safe_free(current->data);
+        safe_free(current);
         current = next;
     }
     list->head = NULL;
